@@ -49,9 +49,9 @@ await natsStore.reset();
     imports: [ConfigModule],
     useFactory: async (configService: ConfigService) => {
       const store = await createBucketKeyValueStore({
-        host: configService.get<string>('STARWARS_PALPATINE_NATS_HOST'),
-        port: configService.get<number>('STARWARS_PALPATINE_NATS_PORT'),
-        bucket: configService.get<string>('STARWARS_PALPATINE_NATS_BUCKET'),
+        host: configService.get<string>('HOST'),
+        port: configService.get<number>('PORT'),
+        bucket: configService.get<string>('BUCKET'),
         ttl: 86400 * 30
       })
       return {
