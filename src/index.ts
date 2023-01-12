@@ -53,10 +53,10 @@ const buildNatsStoreWithConfig = (kv: KV, config: NatsStoreConnectOptions): Nats
         }
 
         if(typeof(value) !== 'string') {
-            return kv.create(key, endcode(JSON.stringify(value)));
+            return kv.put(key, endcode(JSON.stringify(value)));
         }
 
-        return kv.create(key, endcode(value));
+        return kv.put(key, endcode(value));
     }
 
     const get = async (key: any): Promise<any | undefined> => {
