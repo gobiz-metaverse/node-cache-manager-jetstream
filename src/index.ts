@@ -1,4 +1,4 @@
-import { connect, StringCodec, KV } from 'nats';
+import { connect, StringCodec, KV, NatsConnection, JetStreamClient } from 'nats';
 import type { Store } from "cache-manager";
 
 export interface NatsStoreConnectOptions {
@@ -10,6 +10,7 @@ export interface NatsStoreConnectOptions {
 export interface NatsStore extends Store {
     name: string;
     getKv: () => KV;
+    getNc: () => NatsConnection,
     isCacheableValue: any;
     set: (key: any, value: any) => Promise<any>;
     get: (key: any) => Promise<any>;
@@ -33,17 +34,17 @@ const endcode = (value: string): Uint8Array => {
 
 export async function createBucketKeyValueStore (config: NatsStoreConnectOptions): Promise<NatsStore> {
     const nc = await connect({servers: config.url});
-    
+
     const js = nc.jetstream();
-    
+
     const kv = await js.views.kv(config.bucket,{
         ttl: config.ttl,
     });
 
-    return buildNatsStoreWithConfig(kv, config);
+    return buildNatsStoreWithConfig(kv, nc, js, config);
 }
 
-const buildNatsStoreWithConfig = (kv: KV, config: NatsStoreConnectOptions): NatsStore => {
+const buildNatsStoreWithConfig = (kv: KV, nc: NatsConnection, js: JetStreamClient,config: NatsStoreConnectOptions): NatsStore => {
 
     const isCacheableValue = (value: any): boolean => value !== undefined && value !== null;
 
@@ -70,7 +71,13 @@ const buildNatsStoreWithConfig = (kv: KV, config: NatsStoreConnectOptions): Nats
             return undefined;
         }
 
-        return JSON.parse(decode(kvEntry.value));
+        const decodeValue = decode(kvEntry.value);
+
+        if(typeof(decodeValue) === 'string' && !isJson(decodeValue)) {
+            return decodeValue;
+        }
+
+        return JSON.parse(decodeValue);
     }
 
     const del = async (key: any): Promise<void> => {
@@ -93,7 +100,10 @@ const buildNatsStoreWithConfig = (kv: KV, config: NatsStoreConnectOptions): Nats
     }
 
     const reset = async () => {
-        return kv.destroy();
+        await kv.destroy();
+        return js.views.kv(config.bucket, {
+            ttl: config.ttl
+        });
     }
 
     const keys = async (pattern: string) => {
@@ -121,10 +131,20 @@ const buildNatsStoreWithConfig = (kv: KV, config: NatsStoreConnectOptions): Nats
         console.log("Here implement ttl method here");
     };
 
+    const isJson = (value: string): boolean => {
+        try {
+            JSON.parse(value);
+            return true;
+        } catch (error) {
+            return false;
+        }
+    }
+
     return {
         name: 'nats-store',
         isCacheableValue,
         getKv: () => kv,
+        getNc: () => nc,
         set,
         get,
         del,
