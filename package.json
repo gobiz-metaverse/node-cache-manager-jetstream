@@ -1,5 +1,5 @@
 {
-  "name": "cache-manager-nats-store",
+  "name": "@gobiz/node-cache-manager-jetstream",
   "version": "1.0.2",
   "description": "",
   "scripts": {
