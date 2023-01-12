@@ -31,9 +31,6 @@ await natsStore.del("test1");
 await natsStore.reset();
 ```
 <br/>
-<br/>
-<br/>
-<br/>
 <h3>Install with nestjs and cache-manager</h3>
 <b>Install</b>
 <p>npm install cache-manager</p>
