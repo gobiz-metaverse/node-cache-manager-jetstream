@@ -10,8 +10,7 @@
 
 ```js
 const config = {
-    host:"nats://0.0.0.0",
-    port:4222,
+    url:'nats://0.0.0.0:4222',
     ttl: 3600,
     bucket: "test"
 }
@@ -49,8 +48,7 @@ await natsStore.reset();
     imports: [ConfigModule],
     useFactory: async (configService: ConfigService) => {
       const store = await createBucketKeyValueStore({
-        host: configService.get<string>('HOST'),
-        port: configService.get<number>('PORT'),
+        url: configService.get<string>('URL')
         bucket: configService.get<string>('BUCKET'),
         ttl: 86400 * 30
       })

@@ -2,8 +2,7 @@ import { connect, StringCodec, KV } from 'nats';
 import type { Store } from "cache-manager";
 
 export interface NatsStoreConnectOptions {
-    host: string;
-    port: number;
+    url: string;
     ttl: number;
     bucket: string;
 }
@@ -33,7 +32,7 @@ const endcode = (value: string): Uint8Array => {
 }
 
 export async function createBucketKeyValueStore (config: NatsStoreConnectOptions): Promise<NatsStore> {
-    const nc = await connect({servers:`${config.host}:${config.port}`});
+    const nc = await connect({servers: config.url});
     
     const js = nc.jetstream();
     
