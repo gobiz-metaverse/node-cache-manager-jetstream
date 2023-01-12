@@ -5,6 +5,9 @@
 <p>npm install cache-manager</p>
 <p>npm install cache-manager-nats-store</p>
 <b>Usage Examples</b>
+<br/>
+###Example with cache-manager
+
 ```js
 const config = {
     host:"nats://0.0.0.0",
@@ -36,7 +39,11 @@ await natsStore.reset();
 <p>npm install cache-manager</p>
 <p>npm install cache-manager-nats-store</p>
 <b>Usage Examples</b>
+<br/>
+###Exmanple with nestjs
+
 ```js
+// define in module
 @Module({
   imports: [CacheModule.registerAsync({
     imports: [ConfigModule],
@@ -58,4 +65,30 @@ await natsStore.reset();
   exports: []
 })
 export class AppModule {}
+
+// app.service.ts
+import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
+import { Cache } from 'cache-manager';
+@Injectable()
+export class Appservice {
+
+  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {}
+
+  del(key: string): Promise<void> {
+    return this.cacheManager.del(key)
+  }
+
+  get<T> (key: string): Promise<T> {
+    return this.cacheManager.get(key)
+  }
+
+  reset(): Promise<void> {
+    return this.cacheManager.reset()
+  }
+
+  set(key: string, data: any): Promise<void> {
+    return this.cacheManager.set(key, data)
+  }
+
+}
 ```
