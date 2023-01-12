@@ -1,7 +1,7 @@
 {
   "name": "@gobiz/node-cache-manager-jetstream",
-  "version": "1.0.2",
-  "description": "",
+  "version": "0.0.1",
+  "description": "Node cache storage use NATS JetStream",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc -p tsconfig.json",
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/gobiz-metaverse/node-cache-manager-jetstream"
+    "url": "git+https://github.com/gobiz-metaverse/node-cache-manager-jetstream.git"
   },
   "author": "danhpham",
   "license": "ISC",
@@ -25,5 +25,18 @@
   "types": "lib/index.d.ts",
   "files": [
     "lib"
+  ],
+  "bugs": {
+    "url": "https://github.com/gobiz-metaverse/node-cache-manager-jetstream/issues"
+  },
+  "homepage": "https://github.com/gobiz-metaverse/node-cache-manager-jetstream#readme",
+  "directories": {
+    "test": "test"
+  },
+  "keywords": [
+    "cache",
+    "nats",
+    "netstream",
+    "cache-manager"
   ]
 }
