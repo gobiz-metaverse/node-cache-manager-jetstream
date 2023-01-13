@@ -15,13 +15,14 @@ beforeEach(async () => {
     await natsStore.reset();
 });
 
-describe('get', () => {
+describe('Connect', () => {
     it('should connected', () => {
         const isConnected = natsStore.store.getNc().isClosed();
-        console.log(isConnected)
         expect(isConnected).toEqual(false);
     });
+});
 
+describe('Get and set method of nats key/value bucket', () => {
     it('should return exceptions when value undefined', async () => {
         await expect(natsStore.set('test1',undefined)).rejects.toThrowError();
     });
@@ -45,4 +46,21 @@ describe('get', () => {
         });
         expect(typeof(await natsStore.get('test2'))).toBe('object');
     });
+
+    it('should be return undefine when key not found', async () => {
+        await expect(natsStore.get('danhtest123')).resolves.toEqual(undefined);
+    });
+});
+
+describe('Del method', () => {
+    it('should return error when not pass key to arg', async () => {
+        await expect(natsStore.del()).rejects.toThrowError();
+    });
+
+    it('Should del success', async () => {
+        await natsStore.set('hello', 'Danh');
+        await expect(natsStore.get('hello')).resolves.toEqual('Danh');
+        expect(natsStore.del('hello')).toBeInstanceOf(Promise);
+        await expect(natsStore.get('hello')).resolves.toEqual(undefined);
+    })
 });
