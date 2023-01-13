@@ -2,7 +2,6 @@
   "name": "@gobiz/node-cache-manager-jetstream",
   "version": "0.0.1",
   "description": "Node cache storage use NATS JetStream",
-  "type": "module",
   "scripts": {
     "test": "jest --detectOpenHandles",
     "build": "tsc -p tsconfig.json",
