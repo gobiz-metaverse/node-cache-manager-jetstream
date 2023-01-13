@@ -41,10 +41,10 @@ export async function createBucketKeyValueStore (config: NatsStoreConnectOptions
         ttl: config.ttl,
     });
 
-    return buildNatsStoreWithConfig(kv, nc, js, config);
+    return buildNatsStoreWithConfig(kv, nc, config);
 }
 
-const buildNatsStoreWithConfig = (kv: KV, nc: NatsConnection, js: JetStreamClient,config: NatsStoreConnectOptions): NatsStore => {
+const buildNatsStoreWithConfig = (kv: KV, nc: NatsConnection, config: NatsStoreConnectOptions): NatsStore => {
 
     const isCacheableValue = (value: any): boolean => value !== undefined && value !== null;
 
@@ -99,14 +99,7 @@ const buildNatsStoreWithConfig = (kv: KV, nc: NatsConnection, js: JetStreamClien
         console.log("Here implement mdel method here");
     }
 
-    const reset = async () => {
-        await kv.destroy();
-        return js.views.kv(config.bucket, {
-            ttl: config.ttl
-        });
-    }
-
-    const keys = async (pattern: string) => {
+    const keys = async (pattern: string): Promise<string[]> => {
         const keys = await kv.keys();
 
         const filterKeys: string[] = [];
@@ -125,6 +118,18 @@ const buildNatsStoreWithConfig = (kv: KV, nc: NatsConnection, js: JetStreamClien
         }
 
         return filterKeys;
+    }
+
+    const reset = async (): Promise<void | PromiseSettledResult<void>[]> => {
+        const keysOfBucket = await keys('*');
+
+        if(keysOfBucket.length !== 0) {
+            const delPromises = keysOfBucket.map(key => {
+                return kv.delete(key);
+            })
+
+            return Promise.allSettled(delPromises);
+        }
     }
 
     const ttl = async (key: any) => {

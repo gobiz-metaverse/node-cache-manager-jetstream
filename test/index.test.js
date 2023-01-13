@@ -64,3 +64,37 @@ describe('Del method', () => {
         await expect(natsStore.get('hello')).resolves.toEqual(undefined);
     })
 });
+
+describe('Keys method', () => {
+    it('should return array string keys', async () => {
+        await natsStore.set("test","hi");
+        await natsStore.set("test2","hi2");
+        await expect(natsStore.store.keys("*")).resolves.toEqual(['test','test2']);
+    });
+
+    it('Should return array empty when not found any keys', async () => {
+        await expect(natsStore.store.keys("*")).resolves.toEqual([]);
+    })
+
+    it('should return array key with agr pattern', async () => {
+        await natsStore.set("vendor","hi");
+        await natsStore.set("vendorMapping","hi2");
+        await natsStore.set("vendorSecret","hi2");
+        await expect(natsStore.store.keys("vendor")).resolves.toEqual(['vendor','vendorMapping','vendorSecret']);
+        await expect(natsStore.store.keys("vendorMapping")).resolves.toEqual(['vendorMapping']);
+        await expect(natsStore.store.keys("vendorSecret")).resolves.toEqual(['vendorSecret']);
+        await expect(natsStore.store.keys("danh")).resolves.toEqual([]);
+    });
+});
+
+describe('Reset method', () => {
+    it('should return empty array keys', async () => {
+        await natsStore.set("vendor","hi");
+        await natsStore.set("vendorMapping","hi2");
+        await natsStore.set("vendorSecret","hi2");
+        await expect(natsStore.store.keys("vendor")).resolves.toEqual(['vendor','vendorMapping','vendorSecret']);
+        expect(natsStore.reset()).toBeInstanceOf(Promise);
+        await natsStore.reset();
+        await expect(natsStore.store.keys("*")).resolves.toEqual([]);
+    });
+})
