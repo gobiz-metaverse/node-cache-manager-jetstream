@@ -2,12 +2,16 @@ import * as cacheManager from 'cache-manager';
 import { createBucketKeyValueStore } from '../lib/index.js';
 
 const config = {
-    url:"nats://0.0.0.0:4222",
-    ttl: 3600,
-    bucket: "palpatine"
+    url:"nats://nats.gobizdev.com:4222",
+    ttl: 1000,
+    bucket: "test"
 }
 
 var natsStore;
+
+const sleep = (milliseconds) => {
+    return new Promise(resolve => setTimeout(resolve, milliseconds))
+}
 
 beforeEach(async () => {
     natsStore = await cacheManager.caching(createBucketKeyValueStore, config);
@@ -98,3 +102,14 @@ describe('Reset method', () => {
         await expect(natsStore.store.keys("*")).resolves.toEqual([]);
     });
 })
+
+describe('Test ttl of bucket', () => {
+    it('should return undefine when ttl of bucket', async () => {
+        await natsStore.set('hello', 'Danh');
+        await expect(natsStore.get('hello')).resolves.toEqual('Danh');
+        await sleep(300)
+        await expect(natsStore.get('hello')).resolves.toEqual('Danh');
+        await sleep(700)
+        await expect(natsStore.get('hello')).resolves.toEqual(undefined);
+    });
+});
