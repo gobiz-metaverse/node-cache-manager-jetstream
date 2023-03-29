@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Node cache storage use NATS JetStream",
   "scripts": {
-    "test": "jest --detectOpenHandles",
+    "test": "tsc -p tsconfig.json && jest --detectOpenHandles",
     "build": "tsc -p tsconfig.json",
     "prepare": "npm run build"
   },

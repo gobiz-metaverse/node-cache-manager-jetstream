@@ -113,3 +113,14 @@ describe('Test ttl of bucket', () => {
         await expect(natsStore.get('hello')).resolves.toEqual(undefined);
     });
 });
+
+describe('Test nats kv save with key have some special characters', () => {
+    it('should return undefine when ttl of bucket', async () => {
+        await natsStore.set('vendorDetail__R&D.TH', 'Danh');
+        await expect(natsStore.get('vendorDetail__R&D.TH')).resolves.toEqual('Danh');
+        await sleep(300)
+        await expect(natsStore.get('vendorDetail__R&D.TH')).resolves.toEqual('Danh');
+        await sleep(700)
+        await expect(natsStore.get('vendorDetail__R&D.TH')).resolves.toEqual(undefined);
+    });
+});

@@ -53,11 +53,13 @@ const buildNatsStoreWithConfig = (kv: KV, nc: NatsConnection, config: NatsStoreC
             throw new Error(`${value} is not a cacheable value`);
         }
 
+        const keyEncoded = encodeKey(key);
+
         if(typeof(value) !== 'string') {
-            return kv.put(key, endcode(JSON.stringify(value)));
+            return kv.put(keyEncoded, endcode(JSON.stringify(value)));
         }
 
-        return kv.put(key, endcode(value));
+        return kv.put(keyEncoded, endcode(value));
     }
 
     const get = async (key: any): Promise<any | undefined> => {
@@ -65,7 +67,9 @@ const buildNatsStoreWithConfig = (kv: KV, nc: NatsConnection, config: NatsStoreC
             throw new Error(`${key} is not undefined or null`);
         }
 
-        const kvEntry = await kv.get(key);
+        const keyEncoded = encodeKey(key);
+
+        const kvEntry = await kv.get(keyEncoded);
 
         if(!kvEntry?.value || kvEntry.value.length === 0) {
             return undefined;
@@ -84,7 +88,7 @@ const buildNatsStoreWithConfig = (kv: KV, nc: NatsConnection, config: NatsStoreC
         if(!key) {
             throw new Error(`${key} is not undefined or null`);
         }
-        return kv.delete(key);
+        return kv.delete(encodeKey(key));
     }
 
     const mset = async (args: any[]) => {
@@ -99,21 +103,26 @@ const buildNatsStoreWithConfig = (kv: KV, nc: NatsConnection, config: NatsStoreC
         console.log("Here implement mdel method here");
     }
 
-    const keys = async (pattern: string): Promise<string[]> => {
+    const keys = async (pattern: string, isDecode: boolean = true): Promise<string[]> => {
         const keys = await kv.keys();
 
         const filterKeys: string[] = [];
         
         if(!pattern || pattern === '*') {
             for await (const k of keys) {
-                filterKeys.push(k);
+                if(isDecode){
+                    filterKeys.push(decodeKey(k));
+                } else {
+                    filterKeys.push(k);
+                }
             }
             return filterKeys;
         }
 
         for await (const k of keys) {
-            if(k.includes(pattern)) {
-                filterKeys.push(k);
+            const key = isDecode ? decodeKey(k) : k;
+            if(key.includes(pattern)) {
+                filterKeys.push(key);
             }
         }
 
@@ -121,7 +130,7 @@ const buildNatsStoreWithConfig = (kv: KV, nc: NatsConnection, config: NatsStoreC
     }
 
     const reset = async (): Promise<void | PromiseSettledResult<void>[]> => {
-        const keysOfBucket = await keys('*');
+        const keysOfBucket = await keys('*', false);
 
         if(keysOfBucket.length !== 0) {
             const delPromises = keysOfBucket.map(key => {
@@ -143,6 +152,16 @@ const buildNatsStoreWithConfig = (kv: KV, nc: NatsConnection, config: NatsStoreC
         } catch (error) {
             return false;
         }
+    }
+
+    const encodeKey = (key: string): string  => {
+        const buff = Buffer.from(key);
+        return buff.toString('base64');
+    }
+
+    const decodeKey = (base64Key: string): string => {
+        const buff = Buffer.from(base64Key,'base64');
+        return buff.toString('ascii');
     }
 
     return {
